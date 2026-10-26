@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Axiom Bureau</title>
+<style>
+  :root {
+    --ink: #010503;
+    --bone: #3dff7a;
+    --dim: #1f9c4a;
+    --line: #14582d;
+    --alert: #c23b3b;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background-color: var(--ink);
+    /* Put your image in the same folder and name it background.jpg */
+    background-image:
+      radial-gradient(ellipse at center, rgba(1,5,3,.4) 0%, rgba(1,5,3,.93) 80%),
+      url("background.jpg");
+    background-size: cover;
+    background-position: center;
+    color: var(--bone);
+    font-family: Georgia, "Times New Roman", serif;
+    display: grid;
+    place-items: center;
+    padding: 2rem 1.25rem;
+  }
+  main { width: 100%; max-width: 40rem; text-align: center; }
+  h1 {
+    font-weight: normal;
+    font-size: clamp(2rem, 7vw, 3.6rem);
+    letter-spacing: .18em;
+    margin: 0 0 3.5rem;
+    text-shadow: 0 0 18px rgba(61,255,122,.35);
+  }
+  .clue {
+    font-family: "Courier New", Courier, monospace;
+    font-size: clamp(.85rem, 2.6vw, 1.05rem);
+    line-height: 1.9;
+    color: var(--dim);
+    margin: 0 0 1.5rem;
+    word-spacing: .2em;
+  }
+  .gate { display: flex; gap: .5rem; justify-content: center; }
+  input {
+    flex: 1;
+    max-width: 22rem;
+    background: rgba(0,10,4,.75);
+    border: 1px solid var(--line);
+    color: var(--bone);
+    padding: .8rem 1rem;
+    font: inherit;
+    letter-spacing: .1em;
+  }
+  button {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--bone);
+    padding: .8rem 1.2rem;
+    font: inherit;
+    cursor: pointer;
+  }
+  input:focus-visible, button:focus-visible { outline: 2px solid var(--bone); outline-offset: 2px; }
+  button:hover { border-color: var(--bone); }
+  #msg { min-height: 1.5rem; margin-top: 1.2rem; color: var(--alert); font-size: .95rem; }
+  #msg.ok { color: var(--bone); }
+  .shake { animation: shake .3s; }
+  @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  @media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>The Axiom Bureau</h1>
+
+  <p class="clue">192-15-23, 469-4-7, 10-35-23, 128-16-1, 341-8-24, 456-13-28, 7-1-34, 33-22-10, 500-17-27, 235-29-4</p>
+
+  <form class="gate" id="gate" autocomplete="off" spellcheck="false">
+    <input id="pw" type="text" aria-label="Password" placeholder="Password" required>
+    <button type="submit">Enter</button>
+  </form>
+  <p id="msg" role="status"></p>
+</main>
+
+<script>
+  // SHA-256 of the correct password (lowercased, trimmed).
+  // Hash of the current password (lowercase). Replace it to change the password.
+  const PASSWORD_HASH = "847bb8b2a492055af15311dae5cfbac7e972041eceddc9146e46bd787492504c";
+
+  async function sha256(text) {
+    const data = new TextEncoder().encode(text);
+    const buf = await crypto.subtle.digest("SHA-256", data);
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  const form = document.getElementById("gate");
+  const input = document.getElementById("pw");
+  const msg = document.getElementById("msg");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const hash = await sha256(input.value.trim().toLowerCase());
+    if (hash === PASSWORD_HASH) {
+      msg.className = "ok";
+      msg.textContent = "Correct.";
+    } else {
+      msg.className = "";
+      msg.textContent = "Incorrect password.";
+      form.classList.remove("shake");
+      void form.offsetWidth;
+      form.classList.add("shake");
+      input.select();
+    }
+  });
+</script>
+</body>
+</html>
